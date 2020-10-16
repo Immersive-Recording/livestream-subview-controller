@@ -1,0 +1,24 @@
+{
+  "name": "livestream-subview-controller",
+  "version": "1.0.0",
+  "description": "Allows for controlling the subview for a livestream.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Immersive-Recording/livestream-subview-controller.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Immersive-Recording/livestream-subview-controller/issues"
+  },
+  "homepage": "https://github.com/Immersive-Recording/livestream-subview-controller#readme",
+  "dependencies": {
+    "@warren-bank/hls-proxy": "^0.16.1",
+    "static-server": "^2.2.1"
+  }
+}
