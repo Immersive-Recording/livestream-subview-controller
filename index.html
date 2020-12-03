@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Chat using Deno</title>
+</head>
+
+<body>
+    <input id="test"><button id="send">send</button>
+    <div id="messages"></div>
+    <script>
+        const test = document.getElementById("test")
+        const send = document.getElementById("send");
+        const messages = document.getElementById("messages");
+        const socket = new WebSocket(`ws://${window.location.host}/ws`);
+        //const socket = new WebSocket(`wss://echo.websocket.org`);
+        socket.onmessage = (event) => {
+            messages.innerHTML = event.data + "<br />" + messages.innerHTML;
+        }
+        send.onclick = () => {
+            socket.send(test.value);
+        }
+    </script>
+</body>
+
+</html>
