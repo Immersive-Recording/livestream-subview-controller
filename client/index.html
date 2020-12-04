@@ -7,41 +7,6 @@
 </head>
 <body>
     <!-- video.js 5 -->
-    <link href="/ext-scripts/video-js/video-js.css" rel="stylesheet">
-    <script src="/ext-scripts/video-js/video.js"></script>
-
-    <!-- video.js hls -->
-    <script src="/ext-scripts/videojs-contrib-hls/videojs-contrib-hls.min.js"></script>
-
-    <script src="/ext-scripts/three-js/r76/three.js"></script>
-
-    <link href="/ext-scripts/videojs-panorama/videojs-panorama.min.css" rel="stylesheet">
-    <script src="/ext-scripts/videojs-panorama/videojs-panorama.min.js"></script>
-
-    <video id="videojs-panorama-player" class="video-js vjs-default-skin" crossorigin="anonymous" poster="assets/poster.jpg"
-        controls="controls" width="640" height="480">
-        <source id="SRC" src="" type="application/x-mpegURL" />
-    </video>
-
-    
-
-    <script>
-        {
-            const proxy = '127.0.0.1:8888'
-            let URL
-            URL = 'http://192.168.1.165:8000/tmp/live/live.m3u8'
-            URL = window.btoa(URL)
-            URL = `http://${proxy}/${URL}.m3u8`
-            console.log(URL)
-            document.getElementById("SRC").src = URL;
-        }
-        var player = window.player = videojs('videojs-panorama-player', {}, function () { });
-        player.panorama({
-            clickAndDrag: true,
-            callback: function () {
-                player.play();
-            }
-        });
-    </script>
+    <script src="/bundles/test.js"></script>
 </body>
 </html>
