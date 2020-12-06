@@ -11,11 +11,20 @@ import { delay } from "https://deno.land/std@0.79.0/async/mod.ts"
 import { BCC } from "./bcc.ts";
 const parsedArgs = parse(Deno.args);
 
-const bcc = new BCC("client-ts", "bundled", "compiled", "cache", "/cache", false);
+const bcc = new BCC({
+    tsSource: "client-ts",
+    bundleFolder: "bundled",
+    compiledFolder: "compiled",
+    cacheFolder: "cache",
+    cacheRoot: "/cache",
+    mapSources: true
+});
+
 if(parsedArgs.r){
     await bcc.clearAllCache()
     console.log("All Caches Cleared!")
 }
+bcc.addCacheSource("skpkDash", "https://cdn.skypack.dev/-/");
 bcc.addCacheSource("skpk", "https://cdn.skypack.dev/");
 
 let rendererSocket: WebSocket | null;
@@ -69,10 +78,20 @@ const socketHandler: handler = async function (socket: WebSocket, url: URL): Pro
 const app = new Application();
 const router = new Router();
 app.use(WebSocketMiddleware(socketHandler));
+app.use(async (context:Context, next: ()=>Promise<void>)=>{
+    if(context.request.url.pathname.startsWith("/-/")) {
+        context.response.body = await bcc.scriptCache(context.request.url.pathname.replace("/", ""), "skpk");
+        context.response.type = "text/javascript";
+    } else {
+        await next();
+    }
+})
 app.use(router.routes());
 app.use(router.allowedMethods());
 router.get("/cache/:src/:script", async (context) => {
     if (context.params?.src && context.params?.script && bcc.validSource(context.params.src)) {
+        console.log(`cacheRecovery: ${context.params.src}`)
+        console.log(`         More: ${context.params.script}`)
         context.response.body = await bcc.scriptCache(context.params.script , context.params.src);
         context.response.type = "text/javascript";
     }
@@ -99,6 +118,11 @@ router.get("/renderer.html", async (context: Context) => {
 }).get("/", async (context: Context) => {
     console.log("Hit Index.")
     context.response.body = await Deno.readTextFile(`${Deno.cwd()}/static/index.html`);
+    context.response.type = "text/html";
+}).get("/test.mp4", async (context: Context) => {
+    console.log("Hit Index.");
+    const imageBuf = await Deno.readFile(`${Deno.cwd()}/static/first-1-min.mp4`);
+    context.response.body = imageBuf;
     context.response.type = "text/html";
 });
 

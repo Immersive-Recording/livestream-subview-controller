@@ -20,10 +20,10 @@
 </head>
 <body>
     <div id="container"></div>
-    <video id="testVid" crossorigin="anonymous"></video>
+    <video id="testVid" crossorigin="anonymous" src="/test.mp4"></video>
     <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
     <script>
-        if (Hls.isSupported()) {
+        if (Hls.isSupported() && false) {
             var video = document.getElementById('testVid');
             var hls = new Hls({liveDurationInfinity: true});
             // bind them together

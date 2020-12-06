@@ -1,4 +1,5 @@
 import { assert } from "https://deno.land/std@0.79.0/testing/asserts.ts";
+import { createHash } from "https://deno.land/std/hash/mod.ts";
 import * as fs from "https://deno.land/std@0.79.0/fs/mod.ts";
 
 interface paths {
@@ -6,6 +7,15 @@ interface paths {
     sourceURI: string,
     bundle: string,
     compiled: string,
+}
+
+export interface BCC_Settings {
+    tsSource: string,
+    bundleFolder: string,
+    compiledFolder: string,
+    cacheFolder: string,
+    cacheRoot: string,
+    mapSources?: boolean
 }
 
 export class BCC {
@@ -25,13 +35,13 @@ export class BCC {
      * @param cacheRoot The root URL for cached code.
      * @param mapSources If we should attempt to re-write sources.
      */
-    constructor(tsSource: string, bundleFolder: string, compiledFolder: string, cacheFolder: string, cacheRoot: string, mapSources?: boolean){
-        this.tsSource = tsSource;
-        this.bundleFolder = bundleFolder;
-        this.compiledFolder = compiledFolder;
-        this.cacheFolder = cacheFolder;
-        this.cacheRoot = cacheRoot;
-        this.mapSources = mapSources || false;
+    constructor(settings: BCC_Settings){
+        this.tsSource = settings.tsSource;
+        this.bundleFolder = settings.bundleFolder;
+        this.compiledFolder = settings.compiledFolder;
+        this.cacheFolder = settings.cacheFolder;
+        this.cacheRoot = settings.cacheRoot;
+        this.mapSources = settings.mapSources || false;
     }
 
     /**
@@ -78,13 +88,14 @@ export class BCC {
      * @param code unmapped code
      */
     private mapExternalSources(code: string): string {
-        if(this.mapSources){
-            for (const entry in this.cacheMap.entries()) {
+        let c2 = code
+        if(this.mapSources == true){
+            for (const entry of this.cacheMap.entries()) {
                 const [handle, source] = entry
-                code = code.replaceAll(source, `${this.cacheRoot}/${handle}/`);
+                c2 = c2.replaceAll(source, `${this.cacheRoot}/${handle}/`);
             }
         }
-        return code;
+        return c2;
     }
 
     /**
@@ -189,9 +200,12 @@ export class BCC {
 
     private async updateCache(script: string, src: string, uri: string) {
         const resp = await fetch(`${this.cacheMap.get(src)}${script}`);
+        console.log(resp.headers);
         const code = this.mapExternalSources(await resp.text());
         await fs.ensureDir(`./cache/${src}/`);
-        await Deno.writeTextFile(`./cache/${src}/${script}`, code);
+        const hash = createHash("md5");
+        hash.update(script);
+        await Deno.writeTextFile(`./cache/${src}/${hash.toString()}`, code);
     }
 
     /**
@@ -208,7 +222,9 @@ export class BCC {
      * @param handle source handle
      */
     public async scriptCache(script: string, handle: string): Promise<string> {
-        const uri = `./${this.cacheFolder}/${handle}/${script}`
+        const hash = createHash("md5");
+        hash.update(script);
+        const uri = `./${this.cacheFolder}/${handle}/${hash.toString()}`
         let data = `throw new Error("external cache somehow failed.")`;
         try {
             data = await Deno.readTextFile(uri);
