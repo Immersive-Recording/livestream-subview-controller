@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Livestream Server</title>
+    <style>
+        canvas {
+            border: solid black 2px;
+            width: 720px;
+            height: 1280;
+        }
+        video {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <div id="container"></div>
+    <video id="testVid" crossorigin="anonymous"></video>
+    <script>
+        // Check that service workers are supported
+        if ('serviceWorker' in navigator) {
+            // Use the window load event to keep the page load performant
+            window.addEventListener('load', () => {
+                //navigator.serviceWorker.register('/bundled/service-worker.ts.js');
+            });
+        }
+
+        if (Hls.isSupported()) {
+            var video = document.getElementById('hls');
+            var hls = new Hls({liveDurationInfinity: true});
+            // bind them together
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+                console.log("video and hls.js are now bound together !");
+                hls.loadSource("http://localhost:8090/tmp/live/live.m3u8");
+                hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                    console.log("manifest loaded, found " + data.levels.length + " quality level");
+                    video.addEventListener("play", ()=>{
+                        video.fastSeek(hls.liveSyncPosition);
+                        console.log(`RapidSeek ${hls.liveSyncPosition} from ${video.currentTime}`)
+                    })
+                });
+            });
+        }
+    </script>
+    <script src="/compiled/test2.ts.js" type="module"></script>
+</body>
+</html>

@@ -4,66 +4,48 @@ import {
     Context,
     send
 } from "https://deno.land/x/oak@v6.3.1/mod.ts";
-import { assert } from "https://deno.land/std@0.79.0/testing/asserts.ts";
 import { parse } from "https://deno.land/std@0.79.0/flags/mod.ts";
+import { BCC } from "./bcc.ts";
 const parsedArgs = parse(Deno.args);
 
-const compiled: Map<string, string> = new Map<string, string>();
-if(parsedArgs.r){
-    console.log("Compiling test...")
-    const [diagnostics, emitMap] = await Deno.compile(
-            `./client/script/test.ts`,
-            undefined,
-            {
-                sourceMap: false,
-                inlineSourceMap: true,
-            }
-            );
-    assert(diagnostics == null, `Compile Error: ${JSON.stringify(diagnostics)}`);
-    const cwd = `file://${Deno.cwd()}/client/script/`;
-    for(const resource in emitMap){
-        compiled.set(resource.replace(cwd, ""), emitMap[resource]);
-    }
-} else {
-    //This is a problem, but It will wait for refactor to fix.
-    const cache: Record<string, string> = JSON.parse(await Deno.readTextFile("./cache/compiled.json"));
-    for (const value in cache) {
-        compiled.set(value, cache[value])
-    }  
-}
-
-{
-    console.log("The following have been re-compiled...");
-    for(const k of compiled.keys()){
-        console.log(k);
-    }
-}
-{
-    const cache: Record<string, string> = {};
-    compiled.forEach((value, key) => {
-        cache[key] = value
-    });
-    await Deno.writeTextFile("./cache/compiled.json", JSON.stringify(cache));
-    console.log("Cache updated.");
-}
+const bcc = new BCC("client-ts", "bundled", "compiled", "cache", "/cache", false);
+await bcc.clearAllCache()
+console.log("All Caches Cleared!")
+bcc.addCacheSource("skpk", "https://cdn.skypack.dev/");
 
 const app = new Application();
 const router = new Router();
 app.use(router.routes());
 app.use(router.allowedMethods());
-router.get("/compiled/:script", (context) => {
-    console.log(context.params?.script);
-    if (context.params?.script && compiled.has(context.params.script)) {
-        console.log(compiled.has(context.params.script))
-        context.response.body = compiled.get(context.params.script);
+router.get("/cache/:src/:script", async (context) => {
+    if (context.params?.src && context.params?.script && bcc.validSource(context.params.src)) {
+        context.response.body = await bcc.scriptCache(context.params.script , context.params.src);
         context.response.type = "text/javascript";
     }
-})
+}).get("/compiled/:script", async (context) => {
+    if (context.params?.script && bcc.valid(context.params.script)) {
+        context.response.body = await bcc.cachedCompile(context.params.script);
+        context.response.type = "text/javascript";
+    }
+}).get("/bundled/:script", async (context) => {
+    if (context.params?.script && bcc.valid(context.params.script)) {
+        context.response.body = await bcc.cachedBundle(context.params.script);
+        context.response.type = "text/javascript";
+    }
+});
 router.get("/", async (context: Context) => {
     await send(context, context.request.url.pathname, {
-        root: `${Deno.cwd()}/client`,
+        root: `${Deno.cwd()}/static`,
         index: "index.html",
     });
+}).get("/static/pano.jpg", async (context: Context) => {
+    const imageBuf = await Deno.readFile(`${Deno.cwd()}/static/pano.jpg`);
+    context.response.body = imageBuf;
+    context.response.type = "image/jpg";
+}).get("/static/pano.mp4", async (context: Context) => {
+    const imageBuf = await Deno.readFile(`${Deno.cwd()}/static/pano.mp4`);
+    context.response.body = imageBuf;
+    context.response.type = "application/mp4";
 });
 console.log("Server running on localhost:3000");
 await app.listen({ port: 3000 });
