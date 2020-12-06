@@ -3,49 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Livestream Server</title>
-    <style>
-        canvas {
-            border: solid black 2px;
-            width: 720px;
-            height: 1280;
-        }
-        video {
-            display: none;
-        }
-    </style>
+    <title>Controller</title>
 </head>
 <body>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-    <div id="container"></div>
-    <video id="testVid" crossorigin="anonymous"></video>
+    <button id="song10">Song 10</button>
+    <button id="communion7">Communion 7</button>
+    <button id="after120">After 120</button>
     <script>
-        // Check that service workers are supported
-        if ('serviceWorker' in navigator) {
-            // Use the window load event to keep the page load performant
-            window.addEventListener('load', () => {
-                //navigator.serviceWorker.register('/bundled/service-worker.ts.js');
-            });
-        }
 
-        if (Hls.isSupported()) {
-            var video = document.getElementById('hls');
-            var hls = new Hls({liveDurationInfinity: true});
-            // bind them together
-            hls.attachMedia(video);
-            hls.on(Hls.Events.MEDIA_ATTACHED, function () {
-                console.log("video and hls.js are now bound together !");
-                hls.loadSource("http://localhost:8090/tmp/live/live.m3u8");
-                hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
-                    console.log("manifest loaded, found " + data.levels.length + " quality level");
-                    video.addEventListener("play", ()=>{
-                        video.fastSeek(hls.liveSyncPosition);
-                        console.log(`RapidSeek ${hls.liveSyncPosition} from ${video.currentTime}`)
-                    })
-                });
-            });
-        }
+    const song10 = document.getElementById("song10")
+    const communion7 = document.getElementById("communion7")
+    const after120 = document.getElementById("after120")
+
+    song10.onclick = async (event) => {
+                        await fetch("/trigger/song10");
+    }
+
+    communion7.onclick = async (event) => {
+                        await fetch("/trigger/communion7");
+    }
+
+    after120.onclick = async (event) => {
+                        await fetch("/trigger/after120");
+    }
     </script>
-    <script src="/compiled/test2.ts.js" type="module"></script>
 </body>
 </html>

@@ -8,12 +8,58 @@
 declare var document: Document;
 
 import * as THREE from 'https://cdn.skypack.dev/three?dts';
-import Stats from 'https://cdn.skypack.dev/stats.js?dts';
+//import Stats from 'https://cdn.skypack.dev/stats.js?dts';
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
 let renderer: THREE.Renderer;
 let texture: THREE.VideoTexture;
-var stats: typeof Stats;
+//var stats: typeof Stats;
+const elem: Record<string, THREE.Mesh| null> = {
+    s0: null,
+    s1: null,
+};
+
+interface dof8 {
+    x?: number,
+    y?: number,
+    z?: number,
+    X?: number,
+    Y?: number,
+    Z?: number,
+    scale?: number,
+    alpha?: number,
+}
+
+const socket = new WebSocket(`ws://${window.location.host}/renderer`);
+socket.onmessage = (event) => {
+    const frame: Record<string, dof8> = JSON.parse(event.data)
+    for(const name in frame){
+        const obj = <THREE.Mesh>elem[name];
+        const props = frame[name];
+        if (props.alpha !== undefined){
+            const met = <THREE.Material>obj.material;
+            met.opacity = props.alpha;
+        }
+        if(props.X !== undefined){
+            obj.rotation.x = props.X;
+        }
+        if (props.Y !== undefined) {
+            obj.rotation.y = props.Y;
+        }
+        if (props.Z !== undefined) {
+            obj.rotation.z = props.Z;
+        }
+        if (props.x !== undefined) {
+            obj.position.x = props.x;
+        }
+        if (props.y !== undefined) {
+            obj.position.y = props.y;
+        }
+        if (props.z !== undefined) {
+            obj.position.z = props.z;
+        }
+    }
+}
 
 /*let isUserInteracting = false,
     onPointerDownMouseX = 0, onPointerDownMouseY = 0,
@@ -22,9 +68,8 @@ var stats: typeof Stats;
     phi = 0, theta = 0;*/
 
 init();
-animate();
 
-function createStats() {
+/*function createStats() {
     var stats = new Stats();
     stats.setMode(0);
 
@@ -33,7 +78,7 @@ function createStats() {
     stats.domElement.style.top = '0';
 
     return stats;
-}
+}*/
 
 function init() {
 
@@ -43,9 +88,12 @@ function init() {
 
     scene = new THREE.Scene();
 
-    const geometry = new THREE.SphereBufferGeometry(500, 32, 16);
+    const s0Geom = new THREE.SphereBufferGeometry(100, 32, 16);
     // invert the geometry on the x-axis so that all of the faces point inward
-    geometry.scale(- 1, 1, 1);
+    s0Geom.scale(- 1, 1, 1);
+    const s1Geom = new THREE.SphereBufferGeometry(200, 32, 16);
+    // invert the geometry on the x-axis so that all of the faces point inward
+    s1Geom.scale(- 1, 1, 1);
 
     //const texture = new THREE.TextureLoader().load("/static/pano.jpg");
     const video: HTMLVideoElement = <HTMLVideoElement>document.getElementById('testVid');
@@ -53,18 +101,22 @@ function init() {
         throw new Error("NO VIDEO!")
     }
     texture = new THREE.VideoTexture(video);
-    const material = new THREE.MeshBasicMaterial({ map: texture });
+    const material0 = new THREE.MeshBasicMaterial({ map: texture });
+    const material1 = new THREE.MeshBasicMaterial({ map: texture });
 
-    const mesh = new THREE.Mesh(geometry, material);
+    elem.s0 = new THREE.Mesh(s0Geom, material0);
+    material0.transparent = true;
+    elem.s1 = new THREE.Mesh(s1Geom, material1);
 
-    scene.add(mesh);
+    scene.add(elem.s0);
+    scene.add(elem.s1);
 
     renderer = new THREE.WebGLRenderer();
     //renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
     if (container) {
         //stats = createStats();
-        container.appendChild(stats.domElement);
+        //container.appendChild(stats.domElement);
         container.appendChild(renderer.domElement);
         
         //container.style.touchAction = 'none';
@@ -72,10 +124,14 @@ function init() {
         
         container.onclick = () => {
             video.play();
-            container.onclick = () => {};
+            container.onclick = () => {
+                renderer.domElement.requestFullscreen();
+            };
+            socket.send("ready");
+            animate();
         }
     }
-
+{
     /*document.addEventListener('wheel', onDocumentMouseWheel, false);
 
     //
@@ -124,6 +180,7 @@ function init() {
     //window.addEventListener('resize', onWindowResize, false);
 
 }
+}
 
 function onWindowResize() {
 
@@ -133,6 +190,7 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 
 }
+{
 /*
 function onPointerDown(event: PointerEvent) {
     if (event.isPrimary === false) return;
@@ -179,7 +237,7 @@ function onDocumentMouseWheel(event: WheelEvent) {
     camera.updateProjectionMatrix();
 
 }*/
-
+}
 function animate() {
 
     // deno-lint-ignore no-undef
@@ -190,6 +248,9 @@ function animate() {
     renderer.render(scene, camera);
     //stats.update();
 }
+
+
+
 /*
 function update() {
 
