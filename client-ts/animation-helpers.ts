@@ -6,11 +6,19 @@ export function degreesToRadians(degrees: number): number {
 }
 
 export function fadeIn(t: number, duration: number): dof8 {
-    return { alpha: (t / duration)};
+    if (t <= duration) {
+        return { alpha: (t / duration) };
+    } else {
+        return {};
+    }
 }
 
 export function fadeOut(t: number, duration: number, endPoint: number): dof8 {
-    return {alpha: (1 - ((t - (endPoint - duration)) / duration))};
+    if (t >= (endPoint - duration)) {
+        return { alpha: (1 - ((t - (endPoint - duration)) / duration)) };
+    } else {
+        return {};
+    }
 }
 
 export function spin(t: number, start: dof8, end: dof8, duration: number): dof8 {

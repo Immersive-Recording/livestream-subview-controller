@@ -6,6 +6,8 @@ import { delay } from "https://deno.land/std@0.79.0/async/mod.ts"
 // deno-lint-ignore camelcase
 import { BCC_Middleware } from "https://raw.githubusercontent.com/jcc10/oak_bundle-compile-cache_middleware/v1.0.1/mod.ts";
 import { dof8, dof8Set } from "./client-ts/dof8.ts";
+import * as AniHelpers from "./client-ts/animation-helpers.ts";
+
 const parsedArgs = parse(Deno.args);
 
 let rendererSocket: WebSocket | null;
@@ -15,7 +17,7 @@ const offset: dof8Set = {
         alpha: 0
     },
     s1: {
-        Y: degreesToRadians(-90)
+        Y: AniHelpers.degreesToRadians(-90)
     }
 }
 const freq = 1000 / 60;
@@ -111,74 +113,7 @@ function degreesToRadians(degrees: number): number {
 }
 
 function adustByOffset(i: dof8Set): dof8Set{
-    const o: dof8Set = {};
-    for(const r in i){
-        if(offset[r]){
-            const os: dof8 = offset[r]
-            const l: dof8 = i[r];
-            const u: dof8 = {};
-            if(l.x) {
-                if (os.x){
-                    u.x = os.x + l.x
-                } else {
-                    u.x = l.x
-                }
-            }
-            if(l.y) {
-                if (os.y){
-                    u.y = os.y + l.y
-                } else {
-                    u.y = l.y
-                }
-            }
-            if(l.z) {
-                if(os.z){
-                    u.z = os.z + l.z
-                } else {
-                    u.z = l.z
-                }
-            }
-            if(l.X) {
-                if(os.X){
-                    u.X = os.X + l.X
-                } else {
-                    u.X = l.X
-                }
-            }
-            if(l.Y) {
-                if(os.Y){
-                    u.Y = os.Y + l.Y
-                } else {
-                    u.Y = l.Y
-                }
-            }
-            if(l.Z) {
-                if(os.Z){
-                    u.Z = os.Z + l.Z
-                } else {
-                    u.Z = l.Z
-                }
-            }
-            if (l.scale) {
-                if (os.scale){
-                    u.scale = os.scale + l.scale
-                } else {
-                    u.scale = l.scale
-                }
-            }
-            if (l.alpha) {
-                if (os.alpha){
-                    u.alpha = os.alpha + l.alpha
-                } else {
-                    u.alpha = l.alpha
-                }
-            }
-            o[r] = u;
-        } else {
-            o[r] = i[r];
-        }
-    }
-    return o;
+    return AniHelpers.offsetMerge(i, offset);
 }
 
 function fadeIn(t: number, duration: number): number {
