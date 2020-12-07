@@ -144,7 +144,11 @@ export class BCC {
         return data;
     }
 
-    private async compile(script: string) {
+    /**
+     * Compiles a script and caches it.
+     * @param script script name
+     */
+    public async compile(script: string) {
         const paths = this.generatedPaths(script);
         const [diagnostics, emitMap] = await Deno.compile(
             paths.source,
@@ -172,7 +176,11 @@ export class BCC {
         return await this.cacheOrGen(script, this.generatedPaths(script).compiled, ref, "cachedCompile");
     }
 
-    private async bundle(script: string) {
+    /**
+     * Bundles a script and caches it.
+     * @param script script name
+     */
+    public async bundle(script: string) {
         const paths = this.generatedPaths(script);
         const [diagnostics, emit] = await Deno.bundle(
             paths.source,
