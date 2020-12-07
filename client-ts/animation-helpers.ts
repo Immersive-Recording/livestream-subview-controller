@@ -45,77 +45,59 @@ function wrapAlpha(n: number): number{
     return n;
 }
 
-function mergeLower(a: number, b: number): number{
-    return a;
+function mergeLower(a: number | undefined, b: number | undefined): number | undefined{
+    if(a){
+        if(b){
+            return b + a;
+        } else {
+            return a;
+        }
+    }
 }
-function mergeUpper(a: number, b: number): number{
-    return a;
+function mergeUpper(a: number | undefined, b: number | undefined): number | undefined {
+    if (a) {
+        if (b) {
+            return b + a;
+        } else {
+            return a;
+        }
+    } else {
+        return undefined;
+    }
 }
-function mergeScale(a: number, b: number): number{
-    return a;
+function mergeScale(a: number | undefined, b: number | undefined): number | undefined {
+    if (a) {
+        if (b) {
+            return b + a;
+        } else {
+            return a;
+        }
+    } else {
+        return undefined;
+    }
 }
-function mergeAlpha(a: number, b: number): number{
-    return a;
+function mergeAlpha(a: number | undefined, b: number | undefined): number | undefined {
+    if (a) {
+        if (b) {
+            return b + a;
+        } else {
+            return a;
+        }
+    } else {
+        return undefined;
+    }
 }
 
 export function mergeDof8(a: dof8, b: dof8): dof8 {
     const output: dof8 = {};
-    if (a.x) {
-        if (b.x) {
-            output.x = b.x + a.x
-        } else {
-            output.x = a.x
-        }
-    }
-    if (a.y) {
-        if (b.y) {
-            output.y = b.y + a.y
-        } else {
-            output.y = a.y
-        }
-    }
-    if (a.z) {
-        if (b.z) {
-            output.z = b.z + a.z
-        } else {
-            output.z = a.z
-        }
-    }
-    if (a.X) {
-        if (b.X) {
-            output.X = b.X + a.X
-        } else {
-            output.X = a.X
-        }
-    }
-    if (a.Y) {
-        if (b.Y) {
-            output.Y = b.Y + a.Y
-        } else {
-            output.Y = a.Y
-        }
-    }
-    if (a.Z) {
-        if (b.Z) {
-            output.Z = b.Z + a.Z
-        } else {
-            output.Z = a.Z
-        }
-    }
-    if (a.scale) {
-        if (b.scale) {
-            output.scale = b.scale + a.scale
-        } else {
-            output.scale = a.scale
-        }
-    }
-    if (a.alpha) {
-        if (b.alpha) {
-            output.alpha = b.alpha + a.alpha
-        } else {
-            output.alpha = a.alpha
-        }
-    }
+    output.x = mergeLower(a.x, b.x);
+    output.y = mergeLower(a.y, b.y);
+    output.z = mergeLower(a.z, b.z);
+    output.X = mergeUpper(a.X, b.X);
+    output.Y = mergeUpper(a.Y, b.Y);
+    output.Z = mergeUpper(a.Z, b.Z);
+    output.scale = mergeScale(a.scale, b.scale);
+    output.alpha = mergeAlpha(a.alpha, b.alpha);
     return output;
 }
 
