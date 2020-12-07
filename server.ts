@@ -8,23 +8,9 @@ import { WebSocketMiddleware, handler } from "https://raw.githubusercontent.com/
 import { WebSocket, isWebSocketCloseEvent, isWebSocketPingEvent } from 'https://deno.land/std@0.77.0/ws/mod.ts'
 import { parse } from "https://deno.land/std@0.79.0/flags/mod.ts";
 import { delay } from "https://deno.land/std@0.79.0/async/mod.ts"
-import { BCC } from "./bcc.ts";
+// deno-lint-ignore camelcase
+import { BCC_Middleware } from "https://raw.githubusercontent.com/jcc10/oak_bundle-compile-cache_middleware/v1.0.0/mod.ts";
 const parsedArgs = parse(Deno.args);
-
-const bcc = new BCC({
-    tsSource: "client-ts",
-    bundleFolder: "bundled",
-    compiledFolder: "compiled",
-    cacheFolder: "cache",
-    cacheRoot: "/cache",
-    mapSources: true
-});
-
-if(parsedArgs.r){
-    await bcc.clearAllCache()
-    console.log("All Caches Cleared!")
-}
-bcc.addCacheSource("SkyPack", "https://cdn.skypack.dev/");
 
 let rendererSocket: WebSocket | null;
 
@@ -77,29 +63,25 @@ const socketHandler: handler = async function (socket: WebSocket, url: URL): Pro
 const app = new Application();
 const router = new Router();
 app.use(WebSocketMiddleware(socketHandler));
-const bundledRE = /\/bundled\/(.+)/
-const compiledRE = /\/compiled\/(.+)/;
-const cacheRE = /\/cache\/(.+?)\/(.+)/;
-app.use(async (context:Context, next: ()=>Promise<void>)=>{
-    if (bundledRE.test(context.request.url.pathname)) {
-        const [_, script] = <RegExpExecArray>bundledRE.exec(context.request.url.pathname);
-        context.response.body = await bcc.cachedBundle(script);
-        context.response.type = "text/javascript";
-    } else if (compiledRE.test(context.request.url.pathname)) {
-        const [_, script] = <RegExpExecArray>compiledRE.exec(context.request.url.pathname);
-            context.response.body = await bcc.cachedCompile(script);
-            context.response.type = "text/javascript";
-    } else if (cacheRE.test(context.request.url.pathname)) {
-        const [_, src, script] = <RegExpExecArray>cacheRE.exec(context.request.url.pathname);
-        context.response.body = await bcc.scriptCache(script, src);
-        context.response.type = "text/javascript";
-    } else {
-        await next();
+const bccMiddle = new BCC_Middleware({
+    BCC_Settings: {
+        tsSource: "client-ts",
+        bundleFolder: "bundled",
+        compiledFolder: "compiled",
+        cacheFolder: "cache",
+        cacheRoot: "/cache",
+        mapSources: true
     }
 })
+if (parsedArgs.r) {
+    await bccMiddle.bcc.clearAllCache()
+    console.log("All Caches Cleared!")
+}
+bccMiddle.bcc.addCacheSource("SkyPack", "https://cdn.skypack.dev/");
+app.use(bccMiddle.middleware())
 app.use(async (context: Context, next: () => Promise<void>) => {
     if (context.request.url.pathname.startsWith("/-/")) {
-        context.response.body = await bcc.scriptCache(context.request.url.pathname.replace("/", ""), "SkyPack");
+        context.response.body = await bccMiddle.bcc.scriptCache(context.request.url.pathname.replace("/", ""), "SkyPack");
         context.response.type = "text/javascript";
     } else {
         await next();
