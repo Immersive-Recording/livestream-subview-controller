@@ -200,7 +200,6 @@ export class BCC {
 
     private async updateCache(script: string, src: string, uri: string) {
         const resp = await fetch(`${this.cacheMap.get(src)}${script}`);
-        console.log(resp.headers);
         const code = this.mapExternalSources(await resp.text());
         await fs.ensureDir(`./cache/${src}/`);
         const hash = createHash("md5");

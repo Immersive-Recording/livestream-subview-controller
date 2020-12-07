@@ -24,7 +24,6 @@ if(parsedArgs.r){
     await bcc.clearAllCache()
     console.log("All Caches Cleared!")
 }
-bcc.addCacheSource("skpkDash", "https://cdn.skypack.dev/-/");
 bcc.addCacheSource("skpk", "https://cdn.skypack.dev/");
 
 let rendererSocket: WebSocket | null;
