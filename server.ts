@@ -24,7 +24,7 @@ if(parsedArgs.r){
     await bcc.clearAllCache()
     console.log("All Caches Cleared!")
 }
-bcc.addCacheSource("skpk", "https://cdn.skypack.dev/");
+bcc.addCacheSource("SkyPack", "https://cdn.skypack.dev/");
 
 let rendererSocket: WebSocket | null;
 
@@ -77,9 +77,29 @@ const socketHandler: handler = async function (socket: WebSocket, url: URL): Pro
 const app = new Application();
 const router = new Router();
 app.use(WebSocketMiddleware(socketHandler));
+const bundledRE = /\/bundled\/(.+)/
+const compiledRE = /\/compiled\/(.+)/;
+const cacheRE = /\/cache\/(.+?)\/(.+)/;
 app.use(async (context:Context, next: ()=>Promise<void>)=>{
-    if(context.request.url.pathname.startsWith("/-/")) {
-        context.response.body = await bcc.scriptCache(context.request.url.pathname.replace("/", ""), "skpk");
+    if (bundledRE.test(context.request.url.pathname)) {
+        const [_, script] = <RegExpExecArray>bundledRE.exec(context.request.url.pathname);
+        context.response.body = await bcc.cachedBundle(script);
+        context.response.type = "text/javascript";
+    } else if (compiledRE.test(context.request.url.pathname)) {
+        const [_, script] = <RegExpExecArray>compiledRE.exec(context.request.url.pathname);
+            context.response.body = await bcc.cachedCompile(script);
+            context.response.type = "text/javascript";
+    } else if (cacheRE.test(context.request.url.pathname)) {
+        const [_, src, script] = <RegExpExecArray>cacheRE.exec(context.request.url.pathname);
+        context.response.body = await bcc.scriptCache(script, src);
+        context.response.type = "text/javascript";
+    } else {
+        await next();
+    }
+})
+app.use(async (context: Context, next: () => Promise<void>) => {
+    if (context.request.url.pathname.startsWith("/-/")) {
+        context.response.body = await bcc.scriptCache(context.request.url.pathname.replace("/", ""), "SkyPack");
         context.response.type = "text/javascript";
     } else {
         await next();
@@ -87,24 +107,6 @@ app.use(async (context:Context, next: ()=>Promise<void>)=>{
 })
 app.use(router.routes());
 app.use(router.allowedMethods());
-router.get("/cache/:src/:script", async (context) => {
-    if (context.params?.src && context.params?.script && bcc.validSource(context.params.src)) {
-        console.log(`cacheRecovery: ${context.params.src}`)
-        console.log(`         More: ${context.params.script}`)
-        context.response.body = await bcc.scriptCache(context.params.script , context.params.src);
-        context.response.type = "text/javascript";
-    }
-}).get("/compiled/:script", async (context) => {
-    if (context.params?.script && bcc.valid(context.params.script)) {
-        context.response.body = await bcc.cachedCompile(context.params.script);
-        context.response.type = "text/javascript";
-    }
-}).get("/bundled/:script", async (context) => {
-    if (context.params?.script && bcc.valid(context.params.script)) {
-        context.response.body = await bcc.cachedBundle(context.params.script);
-        context.response.type = "text/javascript";
-    }
-});
 
 router.get("/renderer.html", async (context: Context) => {
     console.log("Hit renderer.")
