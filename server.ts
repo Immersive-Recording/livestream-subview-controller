@@ -9,7 +9,7 @@ import { WebSocket, isWebSocketCloseEvent, isWebSocketPingEvent } from 'https://
 import { parse } from "https://deno.land/std@0.79.0/flags/mod.ts";
 import { delay } from "https://deno.land/std@0.79.0/async/mod.ts"
 // deno-lint-ignore camelcase
-import { BCC_Middleware } from "https://raw.githubusercontent.com/jcc10/oak_bundle-compile-cache_middleware/v1.0.0/mod.ts";
+import { BCC_Middleware } from "https://raw.githubusercontent.com/jcc10/oak_bundle-compile-cache_middleware/v1.0.1/mod.ts";
 const parsedArgs = parse(Deno.args);
 
 let rendererSocket: WebSocket | null;
