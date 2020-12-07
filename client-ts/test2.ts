@@ -8,6 +8,7 @@
 declare var document: Document;
 
 import * as THREE from 'https://cdn.skypack.dev/three?dts';
+import { dof8, dof8Set } from "./dof8.ts";
 //import Stats from 'https://cdn.skypack.dev/stats.js?dts';
 let camera: THREE.PerspectiveCamera;
 let scene: THREE.Scene;
@@ -19,23 +20,12 @@ const elem: Record<string, THREE.Mesh| null> = {
     s1: null,
 };
 
-interface dof8 {
-    x?: number,
-    y?: number,
-    z?: number,
-    X?: number,
-    Y?: number,
-    Z?: number,
-    scale?: number,
-    alpha?: number,
-}
-
 const socket = new WebSocket(`ws://${window.location.host}/renderer`);
 socket.onmessage = (event) => {
-    const frame: Record<string, dof8> = JSON.parse(event.data)
+    const frame: dof8Set = JSON.parse(event.data)
     for(const name in frame){
         const obj = <THREE.Mesh>elem[name];
-        const props = frame[name];
+        const props: dof8 = frame[name];
         if (props.alpha !== undefined){
             const met = <THREE.Material>obj.material;
             met.opacity = props.alpha;

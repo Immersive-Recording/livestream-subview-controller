@@ -5,11 +5,12 @@ import { parse } from "https://deno.land/std@0.79.0/flags/mod.ts";
 import { delay } from "https://deno.land/std@0.79.0/async/mod.ts"
 // deno-lint-ignore camelcase
 import { BCC_Middleware } from "https://raw.githubusercontent.com/jcc10/oak_bundle-compile-cache_middleware/v1.0.1/mod.ts";
+import { dof8, dof8Set } from "./client-ts/dof8.ts";
 const parsedArgs = parse(Deno.args);
 
 let rendererSocket: WebSocket | null;
 
-const offset: Record<string, dof8> = {
+const offset: dof8Set = {
     s0: {
         alpha: 0
     },
@@ -104,24 +105,13 @@ router.get("/renderer.html", async (context: Context) => {
     context.response.type = "text/html";
 });
 
-interface dof8 {
-    x?: number,
-    y?: number,
-    z?: number,
-    X?: number,
-    Y?: number,
-    Z?: number,
-    scale?: number,
-    alpha?: number,
-}
-
 function degreesToRadians(degrees: number): number {
     const pi = Math.PI;
     return degrees * (pi / 180);
 }
 
-function adustByOffset(i: Record<string, dof8>): Record<string, dof8>{
-    const o: Record<string, dof8> = {};
+function adustByOffset(i: dof8Set): dof8Set{
+    const o: dof8Set = {};
     for(const r in i){
         if(offset[r]){
             const os: dof8 = offset[r]
@@ -218,8 +208,8 @@ async function song10() {
     }
 }
 
-function song10Gen(t: number): Record<string, dof8>|false {
-    const r: Record<string, dof8> = {
+function song10Gen(t: number): dof8Set|false {
+    const r: dof8Set = {
         s0: {}
     }
     if(t <= 500){
@@ -254,8 +244,8 @@ async function communion7() {
     }
 }
 
-function communion7Gen(t: number): Record<string, dof8> | false {
-    const r: Record<string, dof8> = {
+function communion7Gen(t: number): dof8Set | false {
+    const r: dof8Set = {
         s0: {}
     }
     if (t <= 250) {
@@ -290,8 +280,8 @@ async function after120() {
     }
 }
 
-function after120Gen(t: number): Record<string, dof8> | false {
-    const r: Record<string, dof8> = {
+function after120Gen(t: number): dof8Set | false {
+    const r: dof8Set = {
         s0: {}
     }
     if (t <= 500) {
