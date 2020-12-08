@@ -12,7 +12,7 @@ export function fadeIn(t: number, duration: number): dof8 {
 }
 
 export function fadeOut(t: number, duration: number, endPoint: number): dof8 {
-    const tSub = timeSubset(t, endPoint - duration, endPoint);
+    const tSub = timeSubset(t, (endPoint - duration), endPoint);
     const alpha = linearChange(tSub, 1, 0);
     return { alpha };
 }
@@ -42,13 +42,13 @@ export function linearChange(t: number, start: number, end: number): number {
 
 export function spin(t: number, start: dof8, end: dof8): dof8 {
     const out: dof8 = {};
-    if (start.X && end.X) {
+    if (start.X != undefined && end.X != undefined) {
         out.X = linearChange(t, start.X, end.X);
     }
-    if (start.Y && end.Y) {
+    if (start.Y != undefined && end.Y != undefined) {
         out.Y = linearChange(t, start.Y, end.Y);
     }
-    if (start.Z && end.Z) {
+    if (start.Z != undefined && end.Z != undefined) {
         out.Z = linearChange(t, start.Z, end.Z);
     }
     return out;
@@ -62,8 +62,8 @@ function wrapAlpha(n: number): number{
 }
 
 function mergeLower(a: number | undefined, b: number | undefined): number | undefined{
-    if(a){
-        if(b){
+    if(a != undefined){
+        if(b != undefined){
             return b + a;
         } else {
             return a;
@@ -71,8 +71,8 @@ function mergeLower(a: number | undefined, b: number | undefined): number | unde
     }
 }
 function mergeUpper(a: number | undefined, b: number | undefined): number | undefined {
-    if (a) {
-        if (b) {
+    if (a != undefined) {
+        if (b != undefined) {
             return b + a;
         } else {
             return a;
@@ -82,8 +82,8 @@ function mergeUpper(a: number | undefined, b: number | undefined): number | unde
     }
 }
 function mergeScale(a: number | undefined, b: number | undefined): number | undefined {
-    if (a) {
-        if (b) {
+    if (a != undefined) {
+        if (b != undefined) {
             return b + a;
         } else {
             return a;
@@ -93,8 +93,8 @@ function mergeScale(a: number | undefined, b: number | undefined): number | unde
     }
 }
 function mergeAlpha(a: number | undefined, b: number | undefined): number | undefined {
-    if (a) {
-        if (b) {
+    if (a != undefined) {
+        if (b != undefined) {
             return b + a;
         } else {
             return a;

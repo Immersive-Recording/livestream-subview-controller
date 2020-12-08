@@ -146,6 +146,13 @@ async function song10() {
     }
 }
 
+const song10StartS0 = {
+    Y: 0
+}
+const song10EndS0 = {
+    Y: AniHelpers.degreesToRadians(180)
+}
+
 function song10Gen(t: number): dof8Set|false {
     const r: dof8Set = {}
     r.s0 = { ...r.s0, ...AniHelpers.fadeIn(t, 500) };
@@ -154,7 +161,9 @@ function song10Gen(t: number): dof8Set|false {
     }
 
     if (t <= (1000 * 10) + (freq * 2)){
-        r.s0.Y = degreesToRadians((t / (1000 * 10)) * 180);
+        const tSub = AniHelpers.timeSubset(t, 0, (1000 * 10));
+        const b = AniHelpers.spin(tSub, song10StartS0, song10EndS0);
+        r.s0 = { ...r.s0, ...b};
         return r;
     }
     return false
