@@ -3,13 +3,12 @@ import { WebSocketMiddleware, handler } from "https://raw.githubusercontent.com/
 import { WebSocket, isWebSocketCloseEvent, isWebSocketPingEvent } from 'https://deno.land/std@0.77.0/ws/mod.ts';
 import { parse } from "https://deno.land/std@0.79.0/flags/mod.ts";
 // deno-lint-ignore camelcase
-import { BCC_Middleware } from "https://raw.githubusercontent.com/jcc10/oak_bundle-compile-cache_middleware/v1.0.1/mod.ts";
+import { BCC_Middleware } from "https://raw.githubusercontent.com/jcc10/oak_bundle-compile-cache_middleware/v1.0.2/mod.ts";
 import * as AniTests from "./client-ts/test-animations.ts";
 
 const parsedArgs = parse(Deno.args);
 
 let rendererSocket: WebSocket | null;
-
 const socketHandler: handler = async function (socket: WebSocket, url: URL): Promise<void> {
     if (url.pathname == "/renderer"){
         rendererSocket = socket;
@@ -62,6 +61,19 @@ const bccMiddle = new BCC_Middleware({
 if (parsedArgs.r) {
     await bccMiddle.bcc.clearAllCache()
     console.log("All Caches Cleared!")
+}
+if (parsedArgs.c) {
+    const preCompileList = [
+        "dof8.ts",
+        "animation-helpers.ts",
+        "test-animations.ts",
+        "test2.ts",
+        "ctrl.ts",
+    ]
+    for (const item of preCompileList){
+        console.log(`Pre-Compiling ${item}`)
+        await bccMiddle.bcc.compile(item);
+    }
 }
 bccMiddle.bcc.addCacheSource("SkyPack", "https://cdn.skypack.dev/");
 app.use( async (context: Context, next) => {
