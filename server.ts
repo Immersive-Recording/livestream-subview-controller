@@ -4,11 +4,15 @@ import { WebSocket, isWebSocketCloseEvent, isWebSocketPingEvent } from 'https://
 import { parse } from "https://deno.land/std@0.79.0/flags/mod.ts";
 // deno-lint-ignore camelcase
 import { BCC_Middleware } from "https://raw.githubusercontent.com/jcc10/oak_bundle-compile-cache_middleware/v1.0.2/mod.ts";
+
+// This needs to get moved during the WebRTC update.
 import * as AniTests from "./client-ts/test-animations.ts";
 
 const parsedArgs = parse(Deno.args);
 
 let rendererSocket: WebSocket | null;
+
+// The test handler. Currently just hardcoded. (Most of the stuff this is handling should be moved to WebRTC)
 const socketHandler: handler = async function (socket: WebSocket, url: URL): Promise<void> {
     if (url.pathname == "/renderer"){
         rendererSocket = socket;
@@ -46,8 +50,11 @@ const socketHandler: handler = async function (socket: WebSocket, url: URL): Pro
 }
 
 const app = new Application();
-const router = new Router();
+
+// The websocket system.
 app.use(WebSocketMiddleware(socketHandler));
+
+// Build, Compile, Cache middleware initialization.
 const bccMiddle = new BCC_Middleware({
     BCC_Settings: {
         tsSource: "client-ts",
@@ -58,10 +65,13 @@ const bccMiddle = new BCC_Middleware({
         mapSources: !parsedArgs.dev
     }
 })
+
+// Clear the cache.
 if (parsedArgs.r) {
     await bccMiddle.bcc.clearAllCache()
     console.log("All Caches Cleared!")
 }
+// Pre-Compile the code.
 if (parsedArgs.c) {
     const preCompileList = [
         "dof8.ts",
@@ -75,12 +85,13 @@ if (parsedArgs.c) {
         await bccMiddle.bcc.compile(item);
     }
 }
+// Adds the cache source for SkyPack.
 bccMiddle.bcc.addCacheSource("SkyPack", "https://cdn.skypack.dev/");
-app.use( async (context: Context, next) => {
-    await next();
-})
-app.use(bccMiddle.middleware())
+// Load the middleware.
+app.use(bccMiddle.middleware());
+// SkyPack Shim since it likes absolute paths with no domain.
 app.use(async (context: Context, next: () => Promise<void>) => {
+    // Just make sure only SkyPack stuff is in the dir `/-/` :P
     if (context.request.url.pathname.startsWith("/-/")) {
         context.response.body = await bccMiddle.bcc.scriptCache(context.request.url.pathname.replace("/", ""), "SkyPack");
         context.response.type = "text/javascript";
@@ -88,9 +99,13 @@ app.use(async (context: Context, next: () => Promise<void>) => {
         await next();
     }
 })
+
+// Router stuff.
+const router = new Router();
 app.use(router.routes());
 app.use(router.allowedMethods());
 
+// This is for the actual HTML pages.
 router.get("/renderer.html", async (context: Context) => {
     console.log("Hit renderer.")
     context.response.body = await Deno.readTextFile(`${Deno.cwd()}/static/renderer.html`);
@@ -103,13 +118,17 @@ router.get("/renderer.html", async (context: Context) => {
     console.log("Hit Index.")
     context.response.body = await Deno.readTextFile(`${Deno.cwd()}/static/index.html`);
     context.response.type = "text/html";
-}).get("/test.mp4", async (context: Context) => {
+});
+
+// This is a test file.
+router.get("/test.mp4", async (context: Context) => {
     console.log("Hit Index.");
     const imageBuf = await Deno.readFile(`${Deno.cwd()}/static/first-1-min.mp4`);
     context.response.body = imageBuf;
     context.response.type = "text/html";
 });
 
+// These are test animations. They will be moved to client code in the WebRTC update.
 router.get("/trigger/song10", (context: Context) => {
     AniTests.animationLoop(rendererSocket, AniTests.song10Gen);
     context.response.body = "running..."
