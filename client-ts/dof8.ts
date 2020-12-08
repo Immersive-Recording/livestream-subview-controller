@@ -1,3 +1,10 @@
+/**
+ * 8 Degrees of Freedom interface.
+ * lowercase: positional.
+ * uppercase: rotational (in radians).
+ * scale: scale.
+ * alpha: opacity. (0: transparent, 1: opaque)
+ */
 export interface dof8 {
     x?: number,
     y?: number,
@@ -9,4 +16,8 @@ export interface dof8 {
     alpha?: number,
 }
 
+/**
+ * Object Name -> dof8 set
+ * Used for sending state updates.
+ */
 export type dof8Set = Record<string, dof8>;
