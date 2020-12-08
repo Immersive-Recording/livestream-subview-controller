@@ -6,42 +6,50 @@ export function degreesToRadians(degrees: number): number {
 }
 
 export function fadeIn(t: number, duration: number): dof8 {
-    if (t <= duration) {
-        return { alpha: (t / duration) };
-    } else {
-        return {};
-    }
+    const tSub = timeSubset(t, 0, duration);
+    const alpha = linearChange(tSub, 0, 1);
+    return { alpha };
 }
 
 export function fadeOut(t: number, duration: number, endPoint: number): dof8 {
-    if (t >= (endPoint - duration)) {
-        return { alpha: (1 - ((t - (endPoint - duration)) / duration)) };
-    } else {
-        return {};
-    }
+    const tSub = timeSubset(t, endPoint - duration, endPoint);
+    const alpha = linearChange(tSub, 1, 0);
+    return { alpha };
 }
 
-export function spin(t: number, start: dof8, end: dof8, duration: number): dof8 {
-    const outOne = t / duration;
-    const range: dof8 = {};
-    if(start.X && end.X){
-        range.X = (end.X - start.X);
-    }
-    if(start.Z && end.Z){
-        range.Z = (end.Z - start.Z);
-    }
-    if(start.Z && end.Z){
-        range.Z = (end.Z - start.Z);
-    }
+/**
+ * Converts timecode to a float.
+ * @param t timecode int
+ * @param startT timecode for 0
+ * @param endT timecode for 1
+ */
+export function timeSubset(t: number, startT: number, endT: number){
+    const range = endT - startT;
+    return (t - startT) / range;
+}
+
+/**
+ * Linear change function.
+ * 
+ * Partially because I'm bad at math and forget the equation snippet.
+ * @param t float from 0 to 1 (0 being start, 1 being end)
+ * @param start Starting Value
+ * @param end Ending Value
+ */
+export function linearChange(t: number, start: number, end: number): number {
+    return (t * (end - start)) + start;
+}
+
+export function spin(t: number, start: dof8, end: dof8): dof8 {
     const out: dof8 = {};
-    if(range.X && start.X){
-        out.X = (outOne * range.X) + start.X;
+    if (start.X && end.X) {
+        out.X = linearChange(t, start.X, end.X);
     }
-    if(range.Y && start.Y){
-        out.Y = (outOne * range.Y) + start.Y;
+    if (start.Y && end.Y) {
+        out.Y = linearChange(t, start.Y, end.Y);
     }
-    if(range.Z && start.Z){
-        out.Z = (outOne * range.Z) + start.Z;
+    if (start.Z && end.Z) {
+        out.Z = linearChange(t, start.Z, end.Z);
     }
     return out;
 }

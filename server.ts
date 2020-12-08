@@ -68,7 +68,7 @@ const bccMiddle = new BCC_Middleware({
         compiledFolder: "compiled",
         cacheFolder: "cache",
         cacheRoot: "/cache",
-        mapSources: true
+        mapSources: !parsedArgs.dev
     }
 })
 if (parsedArgs.r) {
@@ -76,6 +76,9 @@ if (parsedArgs.r) {
     console.log("All Caches Cleared!")
 }
 bccMiddle.bcc.addCacheSource("SkyPack", "https://cdn.skypack.dev/");
+app.use( async (context: Context, next) => {
+    await next();
+})
 app.use(bccMiddle.middleware())
 app.use(async (context: Context, next: () => Promise<void>) => {
     if (context.request.url.pathname.startsWith("/-/")) {
@@ -144,13 +147,10 @@ async function song10() {
 }
 
 function song10Gen(t: number): dof8Set|false {
-    const r: dof8Set = {
-        s0: {}
-    }
-    if(t <= 500){
-        r.s0.alpha = fadeIn(t, 500);
-    }else {
-        r.s0.alpha = fadeOut(t, 500, (1000 * 10));
+    const r: dof8Set = {}
+    r.s0 = { ...r.s0, ...AniHelpers.fadeIn(t, 500) };
+    if (r.s0?.alpha && r.s0.alpha >= 1){
+        r.s0 = {...r.s0, ...AniHelpers.fadeOut(t, 500, (1000 * 10))};
     }
 
     if (t <= (1000 * 10) + (freq * 2)){
@@ -180,13 +180,10 @@ async function communion7() {
 }
 
 function communion7Gen(t: number): dof8Set | false {
-    const r: dof8Set = {
-        s0: {}
-    }
-    if (t <= 250) {
-        r.s0.alpha = fadeIn(t, 250);
-    } else {
-        r.s0.alpha = fadeOut(t, 250, (1000 * 7));
+    const r: dof8Set = {}
+    r.s0 = { ...r.s0, ...AniHelpers.fadeIn(t, 250) };
+    if (r.s0?.alpha && r.s0.alpha >= 1) {
+        r.s0 = { ...r.s0, ...AniHelpers.fadeOut(t, 250, (1000 * 7)) };
     }
 
     if (t <= (1000 * 7) + (freq * 2)) {
@@ -216,16 +213,13 @@ async function after120() {
 }
 
 function after120Gen(t: number): dof8Set | false {
-    const r: dof8Set = {
-        s0: {}
-    }
-    if (t <= 500) {
-        r.s0.alpha = fadeIn(t, 500);
-    } else {
-        r.s0.alpha = fadeOut(t, 500, (1000 * 120));
+    const r: dof8Set = {}
+    r.s0 = { ...r.s0, ...AniHelpers.fadeIn(t, 500) };
+    if (r.s0?.alpha && r.s0.alpha >= 1) {
+        r.s0 = { ...r.s0, ...AniHelpers.fadeOut(t, 500, (1000 * 120)) };
     }
 
-    if (t <= (1000 * 120) + (freq * 2)) {
+    if (t <= (1000 * 10) + (freq * 2)) {
         r.s0.Y = degreesToRadians((t / (1000 * 120)) * 180);
         return r;
     }
