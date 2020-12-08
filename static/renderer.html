@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Livestream Server</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        canvas {
+            border: solid black 2px;
+            width: 720px;
+            height: 1280px;
+        }
+        video {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container"></div>
+    <video id="testVid" crossorigin="anonymous" src="/test.mp4"></video>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <script>
+        if (Hls.isSupported() && false) {
+            var video = document.getElementById('testVid');
+            var hls = new Hls({liveDurationInfinity: true});
+            // bind them together
+            hls.attachMedia(video);
+            hls.on(Hls.Events.MEDIA_ATTACHED, function () {
+                console.log("video and hls.js are now bound together !");
+                hls.loadSource("http://localhost:8090/tmp/live/live.m3u8");
+                hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                    console.log("manifest loaded, found " + data.levels.length + " quality level");
+                });
+            });
+        }
+    </script>
+    <script src="/compiled/test2.ts.js" type="module"></script>
+</body>
+</html>
