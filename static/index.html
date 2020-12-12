@@ -6,26 +6,10 @@
     <title>Controller</title>
 </head>
 <body>
+    <button id="offset">update offset</button>
     <button id="song10">Song 10</button>
     <button id="communion7">Communion 7</button>
     <button id="after120">After 120</button>
-    <script>
-
-    const song10 = document.getElementById("song10")
-    const communion7 = document.getElementById("communion7")
-    const after120 = document.getElementById("after120")
-
-    song10.onclick = async (event) => {
-                        await fetch("/trigger/song10");
-    }
-
-    communion7.onclick = async (event) => {
-                        await fetch("/trigger/communion7");
-    }
-
-    after120.onclick = async (event) => {
-                        await fetch("/trigger/after120");
-    }
-    </script>
+    <script src="/compiled/ctrl.ts" type="module"></script>
 </body>
 </html>
