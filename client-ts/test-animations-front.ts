@@ -101,6 +101,7 @@ export async function animationLoop(
   if (!channel) {
     return;
   }
+  await delay((0.1 * 1000))
   let t = 0;
   let frame = frameGenerator(t);
   try {

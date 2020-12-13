@@ -47,6 +47,8 @@ const onTrack = (event: RTCTrackEvent) => {
   }  
   const streamZero = event.streams[0];
   if(rtcVid.srcObject !== streamZero){
+    // @ts-ignore incubator item.
+    event.receiver.playoutDelayHint = 1000
     rtcVid.srcObject = streamZero;
     const settings = streamZero.getVideoTracks()[0].getSettings();
     console.log(settings)

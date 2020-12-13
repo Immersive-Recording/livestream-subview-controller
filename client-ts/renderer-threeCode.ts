@@ -29,7 +29,7 @@ export class ThreeCode {
         const s0Geom = new THREE.SphereBufferGeometry(100, 32, 16);
         // invert the geometry on the x-axis so that all of the faces point inward
         s0Geom.scale(-1, 1, 1);
-        const s1Geom = new THREE.SphereBufferGeometry(200, 32, 16);
+        const s1Geom = new THREE.SphereBufferGeometry(300, 32, 16);
         // invert the geometry on the x-axis so that all of the faces point inward
         s1Geom.scale(-1, 1, 1);
         const p0Geom = new THREE.PlaneBufferGeometry(settings.width, settings.height);
@@ -71,6 +71,7 @@ export class ThreeCode {
 
         container.onclick = () => {
             video.play();
+            rtcVid.play();
             container.onclick = () => {
                 //this.renderer.domElement.requestFullscreen();
             };
@@ -134,7 +135,8 @@ export class ThreeCode {
         //update();
         // The following is here B/C THREE doesn't ask for frames often enough.
         this.texture.needsUpdate = true;
-        if(this.renderClock.getElapsedTime() >= settings.freq){
+        this.texture2.needsUpdate = true;
+        if(this.renderClock.getElapsedTime() >= (settings.freq / 1000)){
             this.renderer.render(this.scene, this.camera);
             this.renderClock.start();
         }
