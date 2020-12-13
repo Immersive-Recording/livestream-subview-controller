@@ -7,8 +7,15 @@ interface client {
 }
 export class signalRouter {
     renderer: client | null = null;
+    private awaitingRenderer: WebSocket[] = []
     constructor() {
 
+    }
+    private gotRenderer(uuid: string) {
+        for(const socket of this.awaitingRenderer){
+            socket.send(uuid);
+        }
+        this.awaitingRenderer = [];
     }
     public socketHandler() {
         return async (
@@ -32,11 +39,21 @@ export class signalRouter {
                                 socket,
                                 uuid: uuid,
                             };
+                            this.gotRenderer(uuid);
                             console.log(`Renderer UUID: ${uuid}`);
                         } else if (url.pathname == "/controller") {
                             console.log(`Controller UUID: ${uuid}`)
                             if(this.renderer){
                                 socket.send(this.renderer.uuid);
+                            } else {
+                                this.awaitingRenderer.push(socket);
+                            }
+                         } else if (url.pathname == "/camera") {
+                            console.log(`Camera UUID: ${uuid}`)
+                            if(this.renderer){
+                                socket.send(this.renderer.uuid);
+                            } else {
+                                this.awaitingRenderer.push(socket);
                             }
                          }
                     }

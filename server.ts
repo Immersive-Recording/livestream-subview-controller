@@ -111,6 +111,7 @@ if (parsedArgs.c) {
         "renderer.ts",
         "renderer-threeCode.ts",
         "ctrl.ts",
+        "camera.ts",
     ]
     for (const item of preGenList){
         console.log(`Pre-Gen' ${item}`)
@@ -139,6 +140,10 @@ app.use(router.allowedMethods());
 router.get("/renderer.html", async (context: Context) => {
     console.log("Hit renderer.")
     context.response.body = await Deno.readTextFile(`${Deno.cwd()}/static/renderer.html`);
+    context.response.type = "text/html";
+}).get("/camera.html", async (context: Context) => {
+    console.log("Hit Camera.")
+    context.response.body = await Deno.readTextFile(`${Deno.cwd()}/static/camera.html`); 
     context.response.type = "text/html";
 }).get("/index.html", async (context: Context) => {
     console.log("Hit Index.")

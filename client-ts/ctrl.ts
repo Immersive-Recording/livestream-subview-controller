@@ -8,6 +8,13 @@
 declare var document: Document;
 import { RTC_MANAGER, WEBSOCKET_SIGNAL_CLIENT } from "https://raw.githubusercontent.com/jcc10/WebRTC_Manager/main/client_mod.ts";
 import * as AniTests from "./test-animations-front.ts";
+import * as settings from "./THREE-SETTINGS.ts";
+
+const canvas: HTMLCanvasElement = document.createElement("canvas");
+canvas.width = settings.width;
+canvas.height = settings.height;
+const context = canvas.getContext("2d");
+document.body.appendChild(canvas);
 
 const wsSignals = new WEBSOCKET_SIGNAL_CLIENT(`ws://${window.location.host}/rtc-signals`);
 const rtcManager = new RTC_MANAGER<WEBSOCKET_SIGNAL_CLIENT>(wsSignals);
@@ -48,26 +55,74 @@ const setupDC = (dc: RTCDataChannel) => {
     return;
   }
   // ELSE
-  dc.onmessage = () => {};
+  dc.onmessage = (event: MessageEvent) => {
+    if(!context || !canvas){
+      console.warn(`missing ${!context ? "context" : ""} ${!canvas ? "canvas" : ""} !`)
+      return;
+    }
+    console.log("received frame");
+    var img = <HTMLImageElement>new Image();
+    img.onload = function () {
+      context.drawImage(img, 0, 0); // Or at whatever offset you like
+    };
+    img.src = event.data;
+  };
 };
 
 const offset = <HTMLButtonElement>document.getElementById("offset")
 const song10 = <HTMLButtonElement>document.getElementById("song10")
 const communion7 = <HTMLButtonElement>document.getElementById("communion7")
 const after120 = <HTMLButtonElement>document.getElementById("after120")
+const mcUp = <HTMLButtonElement>document.getElementById("mcUp")
+const mcDown = <HTMLButtonElement>document.getElementById("mcDown")
+const preview = <HTMLButtonElement>document.getElementById("preview")
 
 offset.onclick = (event: MouseEvent) => {
-    renderer?.send(JSON.stringify([1, AniTests.offset]));
+  if(renderer?.readyState != "open"){
+    return;
+  }
+    renderer.send(JSON.stringify([1, AniTests.offset]));
 }
 
 song10.onclick = (event: MouseEvent) => {
+  if(renderer?.readyState != "open"){
+    return;
+  }
     AniTests.animationLoop(renderer, AniTests.song10Gen);
 }
 
 communion7.onclick = (event: MouseEvent) => {
+  if(renderer?.readyState != "open"){
+    return;
+  }
     AniTests.animationLoop(renderer, AniTests.communion7Gen);
 }
 
 after120.onclick = (event: MouseEvent) => {
+  if(renderer?.readyState != "open"){
+    return;
+  }
     AniTests.animationLoop(renderer, AniTests.after120Gen);
 }
+
+mcUp.onclick = (event: MouseEvent) => {
+  if(renderer?.readyState != "open"){
+    return;
+  }
+    AniTests.animationLoop(renderer, AniTests.mcUp);
+}
+
+mcDown.onclick = (event: MouseEvent) => {
+  if(renderer?.readyState != "open"){
+    return;
+  }
+    AniTests.animationLoop(renderer, AniTests.mcDown);
+}
+
+preview.onclick = (event: MouseEvent) => {
+  if (renderer?.readyState != "open") {
+    return;
+  }
+  preview.disabled = true;
+  //renderer.send(JSON.stringify([2, "remoteView"]));
+};
