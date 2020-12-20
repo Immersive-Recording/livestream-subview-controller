@@ -137,7 +137,7 @@ router.get("/test.mp4", async (context: Context) => {
 });
 
 let options: ListenOptions = { port: 3000 };
-
+let type = "Server";
 if(parsedArgs.ssl){
     options = {
         ...options,
@@ -146,9 +146,12 @@ if(parsedArgs.ssl){
         certFile: "./cert/cert.pem",
         keyFile: "./cert/key.pem",
     }
-    console.log(`Secure Server running on localhost:${options.port}`);
-} else {
-    console.log(`Server running on localhost:${options.port}`);
+    type = "Secure Server";
 }
+
+if(parsedArgs.port) {
+    options = {...options, port:parseInt(parsedArgs.port)};
+}
+console.log(`${type} running on localhost:${options.port}`);
 
 await app.listen(options);
