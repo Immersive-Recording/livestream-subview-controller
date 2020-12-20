@@ -104,6 +104,12 @@ async function renderMode(): Promise<string> {
     }
     return page;
 }
+if (parsedArgs.file || (!parsedArgs.file && !parsedArgs.hls)) {
+  console.log(`using local file ${"/test.mp4"}`)
+} else if (parsedArgs.hls) {
+    console.log(`using HLS file ${"http://localhost:8090/tmp/live/live.m3u8"}`)
+}
+
 router.get("/renderer.html", async (context: Context) => {
     console.log("Hit renderer.")
     context.response.body = await renderMode();
