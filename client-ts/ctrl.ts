@@ -19,8 +19,23 @@ document.body.appendChild(canvas);
 const wsSignals = new WEBSOCKET_SIGNAL_CLIENT(`ws://${window.location.host}/rtc-signals`);
 const rtcManager = new RTC_MANAGER<WEBSOCKET_SIGNAL_CLIENT>(wsSignals);
 let renderer: RTCDataChannel | null = null;
+const state = <HTMLParagraphElement> document.getElementById("state");
 rtcManager.setOnNewConnect((uuid: string, pc: RTCPeerConnection) => {
     pc.ondatachannel = onDataChannel;
+    pc.onconnectionstatechange = (e) => {
+      switch (pc.connectionState) {
+        case "connected":
+          state.innerHTML = `Connected - ${uuid}`;
+          break;
+        case "disconnected":
+        case "failed":
+          state.innerHTML = `Disconnected / Failed - ${uuid}`;
+          break;
+        case "closed":
+          state.innerHTML = `Closed - ${uuid}`;
+          break;
+      }
+    }
 });
 
 function onDataChannel(ev: RTCDataChannelEvent) {
@@ -41,10 +56,26 @@ wsSignals.setUUIDUpdate((uuid: string) => {
   }
 });
 socket.onmessage = (event: MessageEvent) => {
-    const pc = rtcManager.connect(event.data, 1);
-    console.log(`Started Connection to ${event.data}`);
+    const uuid = event.data;
+    state.innerHTML = `Received - ${uuid}`
+    const pc = rtcManager.connect(uuid, 1);
+    console.log(`Started Connection to ${uuid}`);
     renderer = pc.createDataChannel("animationChannel");
     pc.ondatachannel = onDataChannel;
+    pc.onconnectionstatechange = (e) => {
+      switch (pc.connectionState) {
+        case "connected":
+          state.innerHTML = `Connected - ${uuid}`;
+          break;
+        case "disconnected":
+        case "failed":
+          state.innerHTML = `Disconnected / Failed - ${uuid}`;
+          break;
+        case "closed":
+          state.innerHTML = `Closed - ${uuid}`;
+          break;
+      }
+    };
     renderer.onopen = () => {
         console.log(`Connected to ${event.data}!`);
     }

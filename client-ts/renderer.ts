@@ -116,11 +116,13 @@ const receiveMessage = (dc: RTCDataChannel, uuid: string, event: MessageEvent) =
 
 const socket = new WebSocket(`ws://${window.location.host}/renderer`);
 wsSignals.setUUIDUpdate((uuid: string) => {
-    if(socket.readyState == 1)
+    if(socket.readyState == 1){
       socket.send(uuid);
-    else {
+      document.title = uuid;
+    } else {
       socket.onopen = () => {
         socket.send(uuid);
+        document.title = uuid;
       }
     }
 })
