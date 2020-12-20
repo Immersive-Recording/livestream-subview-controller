@@ -11,49 +11,7 @@ import { BCC_Middleware } from "https://raw.githubusercontent.com/jcc10/oak_bund
 //import { BCC_Middleware } from "./../../oak_bundle-compile-cache_middleware/mod.ts";
 import { signalRouter } from "./rtcSignalRouter.ts";
 
-// This needs to get moved during the WebRTC update.
-import * as AniTests from "./client-ts/test-animations.ts";
-
 const parsedArgs = parse(Deno.args);
-
-let rendererSocket: WebSocket | null;
-
-// The test handler. Currently just hardcoded. (Most of the stuff this is handling should be moved to WebRTC)
-const socketHandler: wsHandler = async function (socket: WebSocket, url: URL): Promise<void> {
-    if (url.pathname == "/renderer"){
-        rendererSocket = socket;
-        console.log("rendererBound");
-    }
-    // Wait for new messages
-    try {
-        for await (const ev of socket) {
-            if (typeof ev === "string") {
-                if (ev == "ready") {
-                    socket.send(JSON.stringify(AniTests.offset));
-                }
-                // text message
-            } else if (isWebSocketPingEvent(ev)) {
-                const [, body] = ev;
-                // ping
-                // stub
-                //console.log("ws:Ping", body);
-            } else if (isWebSocketCloseEvent(ev)) {
-                // close
-                const { code, reason } = ev;
-                //console.log("ws:Close", code, reason);
-            }
-        }
-    } catch (err) {
-        console.error(`failed to receive frame: ${err}`);
-
-        if (!socket.isClosed) {
-            await socket.close(99).catch(console.error);
-        }
-    }
-    console.log("Renderer Lost");
-    rendererSocket = null;
-
-}
 
 const app = new Application();
 
@@ -63,7 +21,6 @@ const wsRTCSignal = new WEBSOCKET_SIGNAL_SERVER("/rtc-signals");
 wsApp.use(wsRTCSignal.socket_handler());
 const sigRouter = new signalRouter();
 wsApp.use(sigRouter.socketHandler());
-wsApp.use(socketHandler);
 app.use(WebSocketMiddleware(wsApp.handle()));
 
 
@@ -107,7 +64,6 @@ if (parsedArgs.c) {
     const preGenList = [
         "dof8.ts",
         "animation-helpers.ts",
-        "test-animations.ts",
         "renderer.ts",
         "renderer-threeCode.ts",
         "ctrl.ts",
@@ -137,9 +93,20 @@ app.use(router.routes());
 app.use(router.allowedMethods());
 
 // This is for the actual HTML pages.
+async function renderMode(): Promise<string> {
+    let page = await Deno.readTextFile(`${Deno.cwd()}/static/renderer.html`);
+    if(parsedArgs.file || (!parsedArgs.file && !parsedArgs.hls)){
+        page = page.replace('fileReplaceText', `src="/test.mp4"`)
+        page = page.replace('hlsReplaceText', "false")
+    } else if(parsedArgs.hls) {
+        page = page.replace('fileReplaceText', "")
+        page = page.replace('hlsReplaceText', "true")
+    }
+    return page;
+}
 router.get("/renderer.html", async (context: Context) => {
     console.log("Hit renderer.")
-    context.response.body = await Deno.readTextFile(`${Deno.cwd()}/static/renderer.html`);
+    context.response.body = await renderMode();
     context.response.type = "text/html";
 }).get("/camera.html", async (context: Context) => {
     console.log("Hit Camera.")

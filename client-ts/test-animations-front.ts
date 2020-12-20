@@ -11,18 +11,9 @@ import * as h from "./animation-helpers.ts";
 import { dof8, dof8Set } from "./dof8.ts";
 import { delay } from "./delay.ts";
 import * as settings from "./THREE-SETTINGS.ts";
+import { offset as offsetPrime } from "./offset.ts";
 
-export const offset: dof8Set = {
-    s0: {
-        alpha: 0
-    },
-    s1: {
-        Y: h.degreesToRadians(-90)
-    },
-    p0: {
-      z: -117.350,
-    }
-}
+export const offset = offsetPrime;
 
 const start180: dof8 = {
     Y: 0

@@ -61,6 +61,8 @@ const startStreams = async () => {
   if (!localVid) {
     throw new Error("NO VIDEO!");
   }
+  alert(`Debug Navigator: ${typeof navigator}`)
+  alert(`Debug MediaDev: ${typeof navigator.mediaDevices}`)
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
     localStream = stream;
@@ -81,6 +83,6 @@ const startStreams = async () => {
     }
     localVid.play();
   } catch (e) {
-    alert(`getUserMedia() error: ${e.name}`);
+    alert(`getUserMedia() error: ${e.toString()}`);
   }
 }

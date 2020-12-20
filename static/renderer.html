@@ -17,11 +17,11 @@
 </head>
 <body>
     <div id="container"></div>
-    <video id="testVid" crossorigin="anonymous" src="/test.mp4"></video>
+    <video id="testVid" crossorigin="anonymous" fileReplaceText></video>
     <video id="rtcVid"></video>
     <script src="/cache/jsdelivr/hls.js@latest"></script>
     <script>
-        if (Hls.isSupported() && false) {
+        if (Hls.isSupported() && hlsReplaceText) {
             var video = document.getElementById('testVid');
             var hls = new Hls({liveDurationInfinity: true});
             // bind them together
