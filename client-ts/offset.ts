@@ -10,5 +10,6 @@ export const offset: dof8Set = {
   p0: {
     z: -117.350,
     alpha: -1,
+    Z: h.degreesToRadians(90),
   },
 };

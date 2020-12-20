@@ -9,6 +9,7 @@ declare var document: Document;
 
 import * as THREE from "https://cdn.skypack.dev/three?dts";
 import * as settings from "./THREE-SETTINGS.ts";
+import * as h from "./animation-helpers.ts";
 
 export class ThreeCode {
     camera: THREE.PerspectiveCamera;
@@ -32,7 +33,7 @@ export class ThreeCode {
         const s1Geom = new THREE.SphereBufferGeometry(300, 32, 16);
         // invert the geometry on the x-axis so that all of the faces point inward
         s1Geom.scale(-1, 1, 1);
-        const p0Geom = new THREE.PlaneBufferGeometry(settings.width, settings.height);
+        const p0Geom = new THREE.PlaneBufferGeometry(settings.height, settings.width);
         p0Geom.scale(0.25, 0.25, 0.25);
 
         //const texture = new THREE.TextureLoader().load("/static/pano.jpg");

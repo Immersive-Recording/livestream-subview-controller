@@ -26,7 +26,7 @@ const three = new ThreeCode();
   }
 }*/
 
-const wsSignals = new WEBSOCKET_SIGNAL_CLIENT(`ws://${window.location.host}/rtc-signals`)
+const wsSignals = new WEBSOCKET_SIGNAL_CLIENT(`${window.location.protocol == "https:" ? "wss" : "ws"}://${window.location.host}/rtc-signals`)
 const rtcManager = new RTC_MANAGER<WEBSOCKET_SIGNAL_CLIENT>(wsSignals);
 const rtcVid: HTMLVideoElement = <HTMLVideoElement> document.getElementById("rtcVid");
 
@@ -114,7 +114,7 @@ const receiveMessage = (dc: RTCDataChannel, uuid: string, event: MessageEvent) =
   }
 }
 
-const socket = new WebSocket(`ws://${window.location.host}/renderer`);
+const socket = new WebSocket(`${window.location.protocol == "https:" ? "wss" : "ws"}://${window.location.host}/renderer`);
 wsSignals.setUUIDUpdate((uuid: string) => {
     if(socket.readyState == 1){
       socket.send(uuid);

@@ -16,7 +16,7 @@ canvas.height = settings.height;
 const context = canvas.getContext("2d");
 document.body.appendChild(canvas);
 
-const wsSignals = new WEBSOCKET_SIGNAL_CLIENT(`ws://${window.location.host}/rtc-signals`);
+const wsSignals = new WEBSOCKET_SIGNAL_CLIENT(`${window.location.protocol == "https:" ? "wss" : "ws"}://${window.location.host}/rtc-signals`);
 const rtcManager = new RTC_MANAGER<WEBSOCKET_SIGNAL_CLIENT>(wsSignals);
 let renderer: RTCDataChannel | null = null;
 const state = <HTMLParagraphElement> document.getElementById("state");
@@ -45,7 +45,7 @@ function onDataChannel(ev: RTCDataChannelEvent) {
 }
 
 
-const socket = new WebSocket(`ws://${window.location.host}/controller`);
+const socket = new WebSocket(`${window.location.protocol == "https:" ? "wss" : "ws"}://${window.location.host}/controller`);
 wsSignals.setUUIDUpdate((uuid: string) => {
   if (socket.readyState == 1) {
     socket.send(uuid);
@@ -107,6 +107,7 @@ const after120 = <HTMLButtonElement>document.getElementById("after120")
 const mcUp = <HTMLButtonElement>document.getElementById("mcUp")
 const mcDown = <HTMLButtonElement>document.getElementById("mcDown")
 const preview = <HTMLButtonElement>document.getElementById("preview")
+let animation = false;
 
 offset.onclick = (event: MouseEvent) => {
   if(renderer?.readyState != "open"){
@@ -115,39 +116,64 @@ offset.onclick = (event: MouseEvent) => {
     renderer.send(JSON.stringify([1, AniTests.offset]));
 }
 
-song10.onclick = (event: MouseEvent) => {
+song10.onclick = async (event: MouseEvent) => {
   if(renderer?.readyState != "open"){
     return;
   }
-    AniTests.animationLoop(renderer, AniTests.song10Gen);
+  if(!animation){
+    animation = true;
+    await AniTests.animationLoop(renderer, AniTests.song10Gen);
+    animation = false;
+  }
+    
 }
 
-communion7.onclick = (event: MouseEvent) => {
+communion7.onclick = async (event: MouseEvent) => {
   if(renderer?.readyState != "open"){
     return;
   }
-    AniTests.animationLoop(renderer, AniTests.communion7Gen);
+  if(!animation){
+    animation = true;
+    await AniTests.animationLoop(renderer, AniTests.communion7Gen);
+    animation = false;
+  }
+    
 }
 
-after120.onclick = (event: MouseEvent) => {
+after120.onclick = async (event: MouseEvent) => {
   if(renderer?.readyState != "open"){
     return;
   }
-    AniTests.animationLoop(renderer, AniTests.after120Gen);
+  if(!animation){
+    animation = true;
+    await AniTests.animationLoop(renderer, AniTests.after120Gen);
+    animation = false;
+  }
+    
 }
 
-mcUp.onclick = (event: MouseEvent) => {
+mcUp.onclick = async (event: MouseEvent) => {
   if(renderer?.readyState != "open"){
     return;
   }
-    AniTests.animationLoop(renderer, AniTests.mcUp);
+  if(!animation){
+    animation = true;
+    await AniTests.animationLoop(renderer, AniTests.mcUp);
+    animation = false;
+  }
+    
 }
 
-mcDown.onclick = (event: MouseEvent) => {
+mcDown.onclick = async (event: MouseEvent) => {
   if(renderer?.readyState != "open"){
     return;
   }
-    AniTests.animationLoop(renderer, AniTests.mcDown);
+  if(!animation){
+    animation = true;
+    await AniTests.animationLoop(renderer, AniTests.mcDown);
+    animation = false;
+  }
+    
 }
 
 preview.onclick = (event: MouseEvent) => {

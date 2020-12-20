@@ -1,4 +1,4 @@
-import { Application, Router, Context } from "https://deno.land/x/oak@v6.3.2/mod.ts";
+import { Application, Router, Context, ListenOptions } from "https://deno.land/x/oak@v6.3.2/mod.ts";
 import {
   WebSocketMiddleware,
   WebSocketMiddlewareHandler,
@@ -136,5 +136,19 @@ router.get("/test.mp4", async (context: Context) => {
     context.response.type = "video/mp4";
 });
 
-console.log("Server running on localhost:3000");
-await app.listen({ port: 3000 });
+let options: ListenOptions = { port: 3000 };
+
+if(parsedArgs.ssl){
+    options = {
+        ...options,
+        port: 443,
+        secure: true,
+        certFile: "./cert/cert.pem",
+        keyFile: "./cert/key.pem",
+    }
+    console.log(`Secure Server running on localhost:${options.port}`);
+} else {
+    console.log(`Server running on localhost:${options.port}`);
+}
+
+await app.listen(options);

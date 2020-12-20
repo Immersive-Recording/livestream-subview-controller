@@ -12,7 +12,7 @@ import { RTC_MANAGER, WEBSOCKET_SIGNAL_CLIENT } from "https://raw.githubusercont
 let localStream: MediaStream;
 let settings: MediaTrackSettings;
 
-const wsSignals = new WEBSOCKET_SIGNAL_CLIENT(`ws://${window.location.host}/rtc-signals`);
+const wsSignals = new WEBSOCKET_SIGNAL_CLIENT(`${window.location.protocol == "https:" ? "wss" : "ws"}://${window.location.host}/rtc-signals`);
 const rtcManager = new RTC_MANAGER<WEBSOCKET_SIGNAL_CLIENT>(wsSignals);
 let renderer: RTCDataChannel | null = null;
 rtcManager.setOnNewConnect((uuid: string, pc: RTCPeerConnection) => {
@@ -26,7 +26,7 @@ function onDataChannel(ev: RTCDataChannelEvent) {
 }
 
 
-const socket = new WebSocket(`ws://${window.location.host}/controller`);
+const socket = new WebSocket(`${window.location.protocol == "https:" ? "wss" : "ws"}://${window.location.host}/controller`);
 wsSignals.setUUIDUpdate((uuid: string) => {
   if (socket.readyState == 1) {
     socket.send(uuid);
@@ -61,10 +61,50 @@ const startStreams = async () => {
   if (!localVid) {
     throw new Error("NO VIDEO!");
   }
-  alert(`Debug Navigator: ${typeof navigator}`)
-  alert(`Debug MediaDev: ${typeof navigator.mediaDevices}`)
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    let stream: MediaStream | null = null;
+    const constraints = [
+      {
+        audio: true,
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: "environment",
+        },
+      },
+      {
+        audio: true,
+        video: {
+          facingMode: "environment",
+        },
+      },
+      {
+        audio: true,
+        video: true,
+      },
+      false
+    ]
+    for(const constraint of constraints){
+      console.log(`Trying constraint: ${JSON.stringify(constraint)}`)
+      if(typeof constraint == "boolean"){
+        alert("No Devices found!");
+        return;
+      }
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraint);
+        break;
+      } catch (e) {
+        if (!(e instanceof DOMException)) {
+          throw e;
+        }
+        if (e.name == "NotFoundError") {
+          stream = null;
+        }
+      }
+    }
+    if(!stream){
+      return;
+    }
     localStream = stream;
     const videoTracks = localStream.getVideoTracks();
     const audioTracks = localStream.getAudioTracks();
@@ -75,6 +115,7 @@ const startStreams = async () => {
       console.log(`Using audio device: ${audioTracks[0].label}`);
     }
     localVid.srcObject = stream;
+    localVid.muted = true;
     settings = stream.getVideoTracks()[0].getSettings();
     localVid.width = settings.width ? settings.width : localVid.width;
     localVid.height = settings.height ? settings.height : localVid.height;
@@ -84,5 +125,10 @@ const startStreams = async () => {
     localVid.play();
   } catch (e) {
     alert(`getUserMedia() error: ${e.toString()}`);
+    console.log(e.name);
+    if(!(e instanceof DOMException)){
+      throw e;
+    }
+    throw e;
   }
 }
